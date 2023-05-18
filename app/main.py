@@ -9,6 +9,7 @@ from app.config import get_config
 
 from app.routes.home import home_router
 from app.routes.transcription import transcription_router
+from app.routes.llm import llm_router
 
 def create_app():
     app = Flask(__name__)
@@ -19,10 +20,12 @@ def create_app():
         db.init_app(app)
         db.create_all()
 
-    CORS(app, resources=r"/transcript/*" )
+    #CORS(app, resources=r"/transcript/*" )
+    CORS(app, resources=r"/llm/*" )
 
     # Routes
     app.register_blueprint(home_router, url_prefix='/home')
+    app.register_blueprint(llm_router, url_prefix='/llm')
     app.register_blueprint(transcription_router, url_prefix='/transcript')
 
     return app

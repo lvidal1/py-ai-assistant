@@ -18,6 +18,7 @@ flask-sqlalchemy = "*"
 boto3 = "*"
 flask-cors = "*"
 python-dotenv = "*"
+requests = "*"
 
 [dev-packages]
 
