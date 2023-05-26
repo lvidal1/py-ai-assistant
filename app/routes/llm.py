@@ -3,39 +3,34 @@ from app.infrastructure.client.bard import bard
 from app.infrastructure.client.amazon_polly import amazon_polly
 import os
 
-llm_router = Blueprint('llm', __name__)
+llm_router = Blueprint("llm", __name__)
 
-@llm_router.route('/bard', methods=["POST"])
+
+@llm_router.route("/bard", methods=["POST"])
 def bard_llm():
+    body = request.get_json()
 
-  body = request.get_json()
+    text = body["text"]
 
-  text = body["text"];
+    speak = body.get("speak", False)
 
-  speak = body.get("speak", False)
+    bard_client = bard(api_key=os.environ.get("BARD_API_KEY"))
 
+    response = bard_client.prompt(f"""Max 10 words: '{text}' """)
+    print(response)
+    if speak:
+        polly_client = amazon_polly(
+            region=os.environ.get("AWS_REGION"),
+            access_key_id=os.environ.get("AWS_ACCESS_KEY"),
+            secret_access_key=os.environ.get("AWS_SECRET_KEY"),
+            language_code="en-US",
+        )
 
-  bard_client = bard(
-      api_key=os.environ.get('BARD_API_KEY')
-  )
+        response = polly_client.synthesize_speech(
+            text=response, voice_id="Salli", output_format="mp3"
+        )
 
-  response = bard_client.prompt(f"""Give a short answer on Max 10 words: '{text}' """)
-  print(response)
-  if speak:
-    polly_client = amazon_polly(
-        region=os.environ.get('AWS_REGION'),
-        access_key_id=os.environ.get('AWS_ACCESS_KEY'),
-        secret_access_key=os.environ.get('AWS_SECRET_KEY'),
-        language_code="en-US"
-    )
+        return response["AudioStream"]
 
-    response = polly_client.synthesize_speech(
-      text=response,
-      voice_id="Salli",
-      output_format="mp3"
-    )
-
-    return response["AudioStream"]
-
-  else:
-    return response
+    else:
+        return response

@@ -19,6 +19,10 @@ boto3 = "*"
 flask-cors = "*"
 python-dotenv = "*"
 requests = "*"
+autohooks = "*"
+autohooks-plugin-black = "*"
+black = "*"
+ruff = "*"
 
 [dev-packages]
 
