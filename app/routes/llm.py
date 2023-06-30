@@ -1,5 +1,6 @@
 from flask import Blueprint, request
 from app.infrastructure.client.bard import bard
+from app.infrastructure.client.gpt import gpt
 from app.infrastructure.client.amazon_polly import amazon_polly
 import os
 
@@ -32,6 +33,43 @@ def bard_llm():
 
             response = polly_client.synthesize_speech(
                 text=response, voice_id="Salli", output_format="mp3"
+            )
+
+            return response["AudioStream"]
+
+        else:
+            return response
+
+    except Exception:
+        return "Error connecting to service", 500
+
+
+@llm_router.route("/gpt", methods=["POST"])
+def gpt_llm():
+    try:
+        body = request.get_json()
+
+        text = body["text"]
+
+        speak = body.get("speak", False)
+
+        gpt_client = gpt()
+
+        response = gpt_client.prompt(f"""'{text}'""")
+
+        if response == "Error":
+            return "Error connecting to Open AI service", 500
+
+        if speak:
+            polly_client = amazon_polly(
+                region=os.environ.get("AWS_REGION"),
+                access_key_id=os.environ.get("AWS_ACCESS_KEY"),
+                secret_access_key=os.environ.get("AWS_SECRET_KEY"),
+                language_code="es-ES",
+            )
+
+            response = polly_client.synthesize_speech(
+                text=response, voice_id="Mia", output_format="mp3"
             )
 
             return response["AudioStream"]
